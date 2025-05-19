@@ -21,13 +21,19 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
   const { theme, setTheme } = useNextTheme();
 
   useEffect(() => {
-    setIsDarkMode(theme === "dark");
+    const currentTheme = theme || localStorage.getItem('theme') || 'system';
+    const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    
+    setIsDarkMode(
+      currentTheme === 'dark' || 
+      (currentTheme === 'system' && systemPrefersDark)
+    );
   }, [theme]);
 
   return (
     <ThemeProviderContext.Provider
       value={{
-        theme: theme || "light",
+        theme: theme || "system",
         setTheme,
         isDarkMode,
       }}
