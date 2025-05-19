@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { 
   Sidebar, 
   SidebarContent, 
@@ -20,13 +20,17 @@ import {
   Calendar, 
   Home, 
   Settings, 
-  ListTodo
+  ListTodo,
+  LogOut
 } from "lucide-react";
 import { useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
+import { supabase } from '@/lib/supabase';
+import { toast } from 'sonner';
 
 export function AppSidebar() {
   const location = useLocation();
+  const navigate = useNavigate();
   
   const menuItems = [
     {
@@ -58,6 +62,16 @@ export function AppSidebar() {
   
   const isActivePath = (path: string) => {
     return location.pathname === path;
+  };
+
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut();
+      toast.success("Logged out successfully");
+      navigate("/auth");
+    } catch (error) {
+      toast.error("Error logging out");
+    }
   };
 
   return (
@@ -101,12 +115,16 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
       
-      <SidebarFooter className="p-4">
+      <SidebarFooter className="p-4 space-y-2">
         <SidebarMenuButton asChild>
           <Link to="/settings" className="flex items-center gap-3">
             <Settings className="h-5 w-5" />
             <span>Settings</span>
           </Link>
+        </SidebarMenuButton>
+        <SidebarMenuButton onClick={handleLogout} className="w-full flex items-center gap-3 text-red-500 hover:text-red-600">
+          <LogOut className="h-5 w-5" />
+          <span>Logout</span>
         </SidebarMenuButton>
       </SidebarFooter>
     </Sidebar>

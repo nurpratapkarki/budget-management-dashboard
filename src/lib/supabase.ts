@@ -1,19 +1,20 @@
 
 import { createClient } from '@supabase/supabase-js';
 import { toast } from 'sonner';
+import { DbExpense, DbBudget } from "@/lib/types";
 
-// Default fallback values for development (don't use these in production)
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://placeholder-supabase-url.supabase.co';
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'placeholder-anon-key';
+// Use the actual Supabase URL and key
+const supabaseUrl = "https://jeiwmghpozanqqqixjrj.supabase.co";
+const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImplaXdtZ2hwb3phbnFxcWl4anJqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc2Mzc3ODMsImV4cCI6MjA2MzIxMzc4M30.t5IVGUGIZxnYgtH94CuwKv3Ju0iZti90aQbUo2q8Hk8";
 
 // Create the Supabase client
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
-
-// Log a warning if we're using placeholder values
-if (supabaseUrl.includes('placeholder') || supabaseAnonKey.includes('placeholder')) {
-  console.warn('Using placeholder Supabase credentials. Set up your VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY environment variables.');
-  toast.warning('Supabase is not properly configured. Some features may not work.');
-}
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    autoRefreshToken: true,
+    persistSession: true,
+    storage: localStorage
+  }
+});
 
 // Helper function to check if user is logged in
 export const isLoggedIn = async () => {
@@ -60,6 +61,46 @@ export const expensesService = {
     
     toast.success('Expense added successfully');
     return data[0];
+  },
+
+  async getMonthlyExpenses() {
+    const { data, error } = await supabase
+      .from('expenses')
+      .select('amount, date')
+      .order('date', { ascending: true });
+    
+    if (error) {
+      toast.error('Failed to load monthly expenses');
+      throw error;
+    }
+
+    // Process data to get monthly totals
+    const monthlyData = data.reduce((acc: Record<string, number>, expense) => {
+      const month = new Date(expense.date).toLocaleString('default', { month: 'short' });
+      acc[month] = (acc[month] || 0) + Number(expense.amount);
+      return acc;
+    }, {});
+
+    return Object.entries(monthlyData).map(([month, amount]) => ({ month, amount }));
+  },
+
+  async getExpensesByCategory() {
+    const { data, error } = await supabase
+      .from('expenses')
+      .select('amount, category');
+    
+    if (error) {
+      toast.error('Failed to load expense categories');
+      throw error;
+    }
+
+    // Process data to get category totals
+    const categoryData = data.reduce((acc: Record<string, number>, expense) => {
+      acc[expense.category] = (acc[expense.category] || 0) + Number(expense.amount);
+      return acc;
+    }, {});
+
+    return Object.entries(categoryData).map(([name, value]) => ({ name, value }));
   }
 };
 
@@ -169,6 +210,3 @@ export const moodsService = {
     return data[0];
   }
 };
-
-// Import types from types file
-import { DbExpense, DbBudget } from "@/lib/types";
