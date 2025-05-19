@@ -2,15 +2,18 @@
 import { createClient } from '@supabase/supabase-js';
 import { toast } from 'sonner';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+// Default fallback values for development (don't use these in production)
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://placeholder-supabase-url.supabase.co';
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'placeholder-anon-key';
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.error('Supabase credentials are not properly configured');
-  toast.error('Database connection failed. Please check your configuration.');
-}
-
+// Create the Supabase client
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+// Log a warning if we're using placeholder values
+if (supabaseUrl.includes('placeholder') || supabaseAnonKey.includes('placeholder')) {
+  console.warn('Using placeholder Supabase credentials. Set up your VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY environment variables.');
+  toast.warning('Supabase is not properly configured. Some features may not work.');
+}
 
 // Helper function to check if user is logged in
 export const isLoggedIn = async () => {
