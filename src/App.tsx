@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -14,6 +13,8 @@ import Tasks from "@/pages/Tasks";
 import Calendar from "@/pages/Calendar";
 import Auth from "@/pages/Auth";
 import NotFound from "@/pages/NotFound";
+import MoodPage from "@/pages/Mood";
+import ProfilePage from "@/pages/Profile";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { User } from "@supabase/supabase-js";
@@ -83,6 +84,8 @@ const App = () => (
                 <Route path="/budgets" element={<Budgets />} />
                 <Route path="/tasks" element={<Tasks />} />
                 <Route path="/calendar" element={<Calendar />} />
+                <Route path="/mood" element={<MoodPage />} />
+                <Route path="/profile" element={<ProfilePage />} />
               </Route>
               <Route path="*" element={<NotFound />} />
             </Routes>

@@ -40,7 +40,7 @@ export interface Task {
   title: string;
   description?: string;
   completed: boolean;
-  dueDate?: Date;
+  due_date?: Date;
   priority: 'low' | 'medium' | 'high';
   category?: string;
 }

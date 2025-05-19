@@ -100,6 +100,21 @@ export const expensesService = {
     }, {});
 
     return Object.entries(categoryData).map(([name, value]) => ({ name, value }));
+  },
+
+  async delete(id: string) {
+    const { error } = await supabase
+      .from('expenses')
+      .delete()
+      .eq('id', id);
+    
+    if (error) {
+      toast.error('Failed to delete expense');
+      throw error;
+    }
+    
+    toast.success('Expense deleted successfully');
+    return true;
   }
 };
 
@@ -135,6 +150,21 @@ export const budgetsService = {
     
     toast.success('Budget added successfully');
     return data[0];
+  },
+
+  async delete(id: string) {
+    const { error } = await supabase
+      .from('budgets')
+      .delete()
+      .eq('id', id);
+    
+    if (error) {
+      toast.error('Failed to delete budget');
+      throw error;
+    }
+    
+    toast.success('Budget deleted successfully');
+    return true;
   }
 };
 
@@ -171,6 +201,37 @@ export const tasksService = {
     
     toast.success('Task added successfully');
     return data[0];
+  },
+
+  async update(id: string, task: any) {
+    const { data, error } = await supabase
+      .from('tasks')
+      .update(task)
+      .eq('id', id)
+      .select();
+    
+    if (error) {
+      toast.error('Failed to update task');
+      throw error;
+    }
+    
+    toast.success('Task updated successfully');
+    return data[0];
+  },
+
+  async delete(id: string) {
+    const { error } = await supabase
+      .from('tasks')
+      .delete()
+      .eq('id', id);
+    
+    if (error) {
+      toast.error('Failed to delete task');
+      throw error;
+    }
+    
+    toast.success('Task deleted successfully');
+    return true;
   }
 };
 
@@ -207,6 +268,21 @@ export const moodsService = {
     
     toast.success('Mood recorded successfully');
     return data[0];
+  },
+
+  async delete(id: string) {
+    const { error } = await supabase
+      .from('moods')
+      .delete()
+      .eq('id', id);
+    
+    if (error) {
+      toast.error('Failed to delete mood record');
+      throw error;
+    }
+    
+    toast.success('Mood record deleted successfully');
+    return true;
   }
 };
 
@@ -286,5 +362,20 @@ export const incomeService = {
     
     toast.success('Income updated successfully');
     return data[0];
+  },
+
+  async delete(id: string) {
+    const { error } = await supabase
+      .from('incomes')
+      .delete()
+      .eq('id', id);
+    
+    if (error) {
+      toast.error('Failed to delete income record');
+      throw error;
+    }
+    
+    toast.success('Income record deleted successfully');
+    return true;
   }
 };

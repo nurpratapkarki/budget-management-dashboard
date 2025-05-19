@@ -18,7 +18,7 @@ import { tasksService } from "@/lib/supabase";
 const formSchema = z.object({
   title: z.string().min(3, "Title is required"),
   description: z.string().optional(),
-  dueDate: z.date().optional(),
+  due_date: z.date().optional(),
   priority: z.enum(["low", "medium", "high"]),
   category: z.string().optional()
 });
@@ -41,7 +41,7 @@ export function TaskForm({ onSuccess }: { onSuccess?: () => void }) {
       await tasksService.create({
         title: values.title,
         description: values.description || "",
-        dueDate: values.dueDate ? values.dueDate.toISOString() : null,
+        due_date: values.due_date ? values.due_date.toISOString() : null,
         priority: values.priority,
         category: values.category || "personal",
         completed: false
@@ -89,7 +89,7 @@ export function TaskForm({ onSuccess }: { onSuccess?: () => void }) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <FormField
               control={form.control}
-              name="dueDate"
+              name="due_date"
               render={({ field }) => (
                 <FormItem className="flex flex-col">
                   <FormLabel>Due Date (Optional)</FormLabel>

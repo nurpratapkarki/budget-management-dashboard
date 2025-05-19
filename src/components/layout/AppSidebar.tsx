@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { 
@@ -21,7 +20,9 @@ import {
   Home, 
   Settings, 
   ListTodo,
-  LogOut
+  LogOut,
+  UserCircle,
+  Smile
 } from "lucide-react";
 import { useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -57,6 +58,11 @@ export function AppSidebar() {
       title: "Calendar",
       path: "/calendar",
       icon: Calendar,
+    },
+    {
+      title: "Mood",
+      path: "/mood",
+      icon: Smile,
     }
   ];
   
@@ -117,11 +123,18 @@ export function AppSidebar() {
       
       <SidebarFooter className="p-4 space-y-2">
         <SidebarMenuButton asChild>
-          <Link to="/settings" className="flex items-center gap-3">
-            <Settings className="h-5 w-5" />
-            <span>Settings</span>
+          <Link to="/profile" className={cn(
+            "flex items-center gap-3",
+            isActivePath("/profile") && "text-primary font-medium"
+          )}>
+            <UserCircle className="h-5 w-5" />
+            <span>Profile</span>
+            {isActivePath("/profile") && (
+              <div className="ml-auto h-1.5 w-1.5 rounded-full bg-primary"></div>
+            )}
           </Link>
         </SidebarMenuButton>
+
         <SidebarMenuButton onClick={handleLogout} className="w-full flex items-center gap-3 text-red-500 hover:text-red-600">
           <LogOut className="h-5 w-5" />
           <span>Logout</span>
