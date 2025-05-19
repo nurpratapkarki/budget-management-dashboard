@@ -1,8 +1,6 @@
-
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { mockExpenses, expensesByCategory } from "@/lib/mock-data";
 import { formatCurrency, formatDate, formatCategory } from "@/lib/helpers";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
@@ -12,12 +10,24 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ExpensePieChart } from "@/components/dashboard/ExpensePieChart";
 import { ExpenseBarChart } from "@/components/dashboard/ExpenseBarChart";
 import { ExpenseLineChart } from "@/components/dashboard/ExpenseLineChart";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { expensesService } from "@/lib/supabase";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const Expenses: React.FC = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const queryClient = useQueryClient();
+  
+  const { data: expenses = [], isLoading } = useQuery({
+    queryKey: ['expenses'],
+    queryFn: expensesService.getAll
+  });
   
   const handleSuccess = () => {
     setIsDialogOpen(false);
+    queryClient.invalidateQueries({ queryKey: ['expenses'] });
+    queryClient.invalidateQueries({ queryKey: ['monthlyExpenses'] });
+    queryClient.invalidateQueries({ queryKey: ['expensesByCategory'] });
   };
 
   return (
@@ -52,28 +62,43 @@ const Expenses: React.FC = () => {
               <CardTitle>Recent Expenses</CardTitle>
             </CardHeader>
             <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Category</TableHead>
-                    <TableHead>Description</TableHead>
-                    <TableHead className="text-right">Amount</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {mockExpenses.slice(0, 5).map((expense) => (
-                    <TableRow key={expense.id} className="group hover:bg-muted/50">
-                      <TableCell>{formatDate(expense.date, 'MMM dd')}</TableCell>
-                      <TableCell>
-                        <span className="capitalize">{formatCategory(expense.category)}</span>
-                      </TableCell>
-                      <TableCell>{expense.description}</TableCell>
-                      <TableCell className="text-right font-medium">{formatCurrency(expense.amount)}</TableCell>
-                    </TableRow>
+              {isLoading ? (
+                <div className="space-y-2">
+                  {[1, 2, 3, 4, 5].map(i => (
+                    <Skeleton key={i} className="h-12 w-full" />
                   ))}
-                </TableBody>
-              </Table>
+                </div>
+              ) : expenses.length === 0 ? (
+                <div className="text-center py-6 text-muted-foreground">
+                  <p>No expenses found.</p>
+                  <p className="text-sm mt-2">
+                    Click the "Add Expense" button to start tracking your expenses.
+                  </p>
+                </div>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Category</TableHead>
+                      <TableHead>Description</TableHead>
+                      <TableHead className="text-right">Amount</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {expenses.slice(0, 5).map((expense: any) => (
+                      <TableRow key={expense.id} className="group hover:bg-muted/50">
+                        <TableCell>{formatDate(new Date(expense.date), 'MMM dd')}</TableCell>
+                        <TableCell>
+                          <span className="capitalize">{formatCategory(expense.category)}</span>
+                        </TableCell>
+                        <TableCell>{expense.description}</TableCell>
+                        <TableCell className="text-right font-medium">{formatCurrency(expense.amount)}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
             </CardContent>
           </Card>
         </TabsContent>

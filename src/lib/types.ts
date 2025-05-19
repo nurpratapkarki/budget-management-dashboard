@@ -92,3 +92,13 @@ export interface DbBudget {
   period: 'weekly' | 'monthly' | 'yearly';
   created_at: string;
 }
+
+// Income types for database
+export interface DbIncome {
+  id: string;
+  user_id: string;
+  amount: number;
+  source?: string;
+  period: 'weekly' | 'monthly' | 'yearly';
+  created_at: string;
+}

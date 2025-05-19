@@ -1,10 +1,10 @@
-
 import React, { useEffect, useState } from "react";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { ExpensePieChart } from "@/components/dashboard/ExpensePieChart";
 import { BudgetProgress } from "@/components/dashboard/BudgetProgress";
 import { TasksList } from "@/components/dashboard/TasksList";
 import { MoodTracker } from "@/components/dashboard/MoodTracker";
+import { IncomeCard } from "@/components/dashboard/IncomeCard";
 import { PieChart, BarChart, Calendar } from "lucide-react";
 import { formatCurrency, daysLeftInMonth } from "@/lib/helpers";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,35 +18,40 @@ import {
   ResponsiveContainer 
 } from "recharts";
 import { useQuery } from "@tanstack/react-query";
-import { expensesService } from "@/lib/supabase";
+import { expensesService, incomeService } from "@/lib/supabase";
 
 const Dashboard: React.FC = () => {
   const [financialSummary, setFinancialSummary] = useState({
-    totalIncome: 5000,
+    totalIncome: 0,
     totalExpenses: 0,
     netSavings: 0,
   });
   
-  const { data: monthlyExpenses, isLoading: loadingMonthlyExpenses } = useQuery({
+  const { data: monthlyExpenses = [], isLoading: loadingMonthlyExpenses } = useQuery({
     queryKey: ['monthlyExpenses'],
     queryFn: expensesService.getMonthlyExpenses
   });
 
-  const { data: expenses } = useQuery({
+  const { data: expenses = [] } = useQuery({
     queryKey: ['expenses'],
     queryFn: expensesService.getAll
+  });
+
+  const { data: totalIncome = 0 } = useQuery({
+    queryKey: ['totalIncome'],
+    queryFn: incomeService.getTotalIncome
   });
 
   useEffect(() => {
     if (expenses) {
       const totalExp = expenses.reduce((total: number, expense: any) => total + Number(expense.amount), 0);
-      setFinancialSummary(prev => ({
-        ...prev,
+      setFinancialSummary({
+        totalIncome: totalIncome,
         totalExpenses: totalExp,
-        netSavings: prev.totalIncome - totalExp
-      }));
+        netSavings: totalIncome - totalExp
+      });
     }
-  }, [expenses]);
+  }, [expenses, totalIncome]);
 
   return (
     <div className="animate-fade-in space-y-6">
@@ -62,19 +67,20 @@ const Dashboard: React.FC = () => {
           title="Total Income"
           value={formatCurrency(financialSummary.totalIncome)}
           icon={<BarChart className="h-5 w-5" />}
-          trend={{ value: 12, positive: true }}
+          description="per month"
         />
         <StatCard
           title="Total Expenses"
           value={formatCurrency(financialSummary.totalExpenses)}
           icon={<BarChart className="h-5 w-5" />}
-          trend={{ value: 5, positive: false }}
+          description="this month"
         />
         <StatCard
           title="Net Savings"
           value={formatCurrency(financialSummary.netSavings)}
-          description={`${Math.round((financialSummary.netSavings / financialSummary.totalIncome) * 100)}% of income`}
-          trend={{ value: 8, positive: true }}
+          description={financialSummary.totalIncome ? 
+            `${Math.round((financialSummary.netSavings / financialSummary.totalIncome) * 100)}% of income` : 
+            "Add income to see percentage"}
         />
         <StatCard
           title="Days Left in Month"
@@ -84,8 +90,9 @@ const Dashboard: React.FC = () => {
         />
       </div>
       
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        <div className="lg:col-span-2">
+      <div className="grid gap-6 md:grid-cols-3">
+        <IncomeCard className="card-hover h-full md:col-span-1" />
+        <div className="md:col-span-2">
           <Card className="card-hover h-full">
             <CardHeader className="pb-0">
               <CardTitle className="text-lg">Monthly Expenses</CardTitle>
@@ -137,7 +144,6 @@ const Dashboard: React.FC = () => {
             </CardContent>
           </Card>
         </div>
-        <MoodTracker className="h-full" />
       </div>
       
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">

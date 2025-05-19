@@ -1,7 +1,6 @@
-
 import { createClient } from '@supabase/supabase-js';
 import { toast } from 'sonner';
-import { DbExpense, DbBudget } from "@/lib/types";
+import { DbExpense, DbBudget, DbIncome } from "@/lib/types";
 
 // Use the actual Supabase URL and key
 const supabaseUrl = "https://jeiwmghpozanqqqixjrj.supabase.co";
@@ -207,6 +206,85 @@ export const moodsService = {
     }
     
     toast.success('Mood recorded successfully');
+    return data[0];
+  }
+};
+
+// Database functions for income
+export const incomeService = {
+  async getAll() {
+    const { data, error } = await supabase
+      .from('incomes')
+      .select('*')
+      .order('created_at', { ascending: false });
+    
+    if (error) {
+      toast.error('Failed to load income data');
+      throw error;
+    }
+    return data;
+  },
+
+  async getTotalIncome() {
+    const { data, error } = await supabase
+      .from('incomes')
+      .select('amount, period')
+      .order('created_at', { ascending: false });
+    
+    if (error) {
+      toast.error('Failed to load income data');
+      throw error;
+    }
+
+    if (!data || data.length === 0) {
+      return 0; // No income data yet
+    }
+
+    // Calculate total monthly income (convert weekly to monthly and yearly to monthly)
+    return data.reduce((total, income) => {
+      let amount = Number(income.amount);
+      if (income.period === 'weekly') {
+        amount = amount * 4; // Approximate monthly equivalent
+      } else if (income.period === 'yearly') {
+        amount = amount / 12; // Monthly equivalent
+      }
+      return total + amount;
+    }, 0);
+  },
+
+  async create(income: Omit<DbIncome, 'id' | 'created_at' | 'user_id'>) {
+    const user = await getCurrentUser();
+    
+    const { data, error } = await supabase
+      .from('incomes')
+      .insert([{
+        ...income,
+        user_id: user?.id
+      }])
+      .select();
+    
+    if (error) {
+      toast.error('Failed to add income');
+      throw error;
+    }
+    
+    toast.success('Income added successfully');
+    return data[0];
+  },
+
+  async update(id: string, income: Partial<Omit<DbIncome, 'id' | 'created_at' | 'user_id'>>) {
+    const { data, error } = await supabase
+      .from('incomes')
+      .update(income)
+      .eq('id', id)
+      .select();
+    
+    if (error) {
+      toast.error('Failed to update income');
+      throw error;
+    }
+    
+    toast.success('Income updated successfully');
     return data[0];
   }
 };
