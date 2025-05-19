@@ -7,6 +7,11 @@ import { cn } from "@/lib/utils";
 
 const COLORS = ['#4CAF50', '#2196F3', '#FF9800', '#9C27B0', '#F44336', '#3F51B5', '#E91E63', '#607D8B'];
 
+// Custom formatter for the legend text
+const renderLegendText = (value: string) => {
+  return <span className="text-xs font-medium">{value}</span>;
+};
+
 export const ExpensePieChart: React.FC<{ className?: string }> = ({ className }) => {
   return (
     <Card className={cn("card-hover", className)}>
@@ -35,8 +40,25 @@ export const ExpensePieChart: React.FC<{ className?: string }> = ({ className })
               <Tooltip 
                 formatter={(value) => [`$${value}`, 'Amount']} 
                 labelFormatter={(label) => `Category: ${label}`}
+                contentStyle={{ backgroundColor: 'var(--background)', borderColor: 'var(--border)' }}
+                itemStyle={{ color: 'var(--foreground)' }}
               />
-              <Legend />
+              <Legend 
+                layout="horizontal" 
+                verticalAlign="bottom" 
+                align="center"
+                formatter={renderLegendText}
+                iconSize={10}
+                iconType="circle"
+                wrapperStyle={{ 
+                  paddingTop: 20, 
+                  fontSize: '12px',
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  justifyContent: 'center',
+                  gap: '8px',
+                }}
+              />
             </PieChart>
           </ResponsiveContainer>
         </div>

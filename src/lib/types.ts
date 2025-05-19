@@ -1,4 +1,3 @@
-
 export type MoodType = 'happy' | 'neutral' | 'sad' | 'stressed' | 'excited';
 
 export interface Mood {
@@ -55,4 +54,41 @@ export interface FinancialSummary {
     amount: number;
     percentage: number;
   }[];
+}
+
+// Supabase Authentication Types
+export interface UserSession {
+  user: {
+    id: string;
+    email?: string;
+    user_metadata?: {
+      full_name?: string;
+      avatar_url?: string;
+      name?: string;
+    };
+  };
+  access_token: string;
+  refresh_token: string;
+}
+
+// Expense types for database
+export interface DbExpense {
+  id: string;
+  user_id: string;
+  amount: number;
+  category: string;
+  description: string;
+  date: string;
+  created_at: string;
+}
+
+// Budget types for database
+export interface DbBudget {
+  id: string;
+  user_id: string;
+  category: string;
+  amount: number;
+  current_amount: number;
+  period: 'weekly' | 'monthly' | 'yearly';
+  created_at: string;
 }
