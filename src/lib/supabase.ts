@@ -379,3 +379,211 @@ export const incomeService = {
     return true;
   }
 };
+
+// Database functions for Friends
+export const friendsService = {
+  async getAllFriends() {
+    const { data, error } = await supabase
+      .from('friends')
+      .select('*')
+      .order('name', { ascending: true });
+    if (error) {
+      toast.error('Failed to load friends');
+      throw error;
+    }
+    return data;
+  },
+
+  async createFriend(friendData: { name: string; contact_number?: string }) {
+    const user = await getCurrentUser();
+    const { data, error } = await supabase
+      .from('friends')
+      .insert([{ ...friendData, user_id: user?.id }])
+      .select()
+      .single();
+    if (error) {
+      toast.error('Failed to create friend');
+      throw error;
+    }
+    return data;
+  },
+  
+  async getFriendByName(name: string) {
+    const user = await getCurrentUser();
+    const { data, error } = await supabase
+      .from('friends')
+      .select('id')
+      .eq('user_id', user?.id)
+      .eq('name', name)
+      .maybeSingle(); // Use maybeSingle as friend might not exist
+    if (error) {
+      // Don't toast error here, as not finding is a valid case for checking
+      console.error('Error checking for friend:', error);
+      throw error;
+    }
+    return data; // Returns friend object with id or null
+  }
+};
+
+// Database functions for Friendly Loans (Updated)
+export const friendlyLoansService = {
+  // --- Loan Functions ---
+  async getAllLoans() {
+    const { data, error } = await supabase
+      .from('loans')
+      .select(`
+        *,
+        repayments(*),
+        friends (id, name, contact_number)
+      `)
+      .order('loan_date', { ascending: false });
+    
+    if (error) {
+      toast.error('Failed to load friendly loans');
+      throw error;
+    }
+    return data;
+  },
+
+  async getLoanById(id: string) {
+    const { data, error } = await supabase
+      .from('loans')
+      .select(`
+        *,
+        repayments(*),
+        friends (id, name, contact_number)
+      `)
+      .eq('id', id)
+      .single();
+      
+    if (error) {
+      toast.error('Failed to load loan details');
+      throw error;
+    }
+    return data;
+  },
+
+  async createLoan(loanData: any, friend_id: string) {
+    const user = await getCurrentUser();
+    const { data, error } = await supabase
+      .from('loans')
+      .insert([{ ...loanData, user_id: user?.id, friend_id }])
+      .select(`
+        *,
+        repayments(*),
+        friends (id, name, contact_number)
+      `)
+      .single();
+      
+    if (error) {
+      toast.error('Failed to create loan');
+      throw error;
+    }
+    toast.success('Loan added successfully');
+    return data;
+  },
+
+  async updateLoan(id: string, loanData: any, friend_id?: string) { // friend_id is optional on update
+    const updatePayload = { ...loanData };
+    if (friend_id) {
+      updatePayload.friend_id = friend_id;
+    }
+
+    const { data, error } = await supabase
+      .from('loans')
+      .update(updatePayload)
+      .eq('id', id)
+      .select(`
+        *,
+        repayments(*),
+        friends (id, name, contact_number)
+      `)
+      .single();
+      
+    if (error) {
+      toast.error('Failed to update loan');
+      throw error;
+    }
+    toast.success('Loan updated successfully');
+    return data;
+  },
+
+  async deleteLoan(id: string) {
+    const { error } = await supabase
+      .from('loans')
+      .delete()
+      .eq('id', id);
+      
+    if (error) {
+      toast.error('Failed to delete loan');
+      throw error;
+    }
+    toast.success('Loan deleted successfully');
+    return true;
+  },
+
+  // --- Repayment Functions ---
+  async addRepayment(repaymentData: any) {
+    const user = await getCurrentUser();
+    const { data, error } = await supabase
+      .from('repayments')
+      .insert([{ ...repaymentData, user_id: user?.id }])
+      .select()
+      .single();
+      
+    if (error) {
+      toast.error('Failed to add repayment');
+      throw error;
+    }
+    toast.success('Repayment added successfully');
+    await this.updateLoanStatus(repaymentData.loan_id);
+    return data;
+  },
+
+  async deleteRepayment(id: string, loan_id: string) {
+    const { error } = await supabase
+      .from('repayments')
+      .delete()
+      .eq('id', id);
+      
+    if (error) {
+      toast.error('Failed to delete repayment');
+      throw error;
+    }
+    toast.success('Repayment deleted successfully');
+    await this.updateLoanStatus(loan_id);
+    return true;
+  },
+  
+  async updateLoanStatus(loanId: string) {
+    const { data: loan, error: loanError } = await supabase
+      .from('loans')
+      .select('amount, repayments(amount)')
+      .eq('id', loanId)
+      .single();
+
+    if (loanError || !loan) {
+      console.error('Error fetching loan for status update:', loanError);
+      return;
+    }
+
+    const totalRepaid = loan.repayments.reduce((sum: number, r: any) => sum + Number(r.amount), 0);
+    let newStatus = 'pending';
+
+    if (totalRepaid >= Number(loan.amount)) {
+      newStatus = 'paid';
+    } else if (totalRepaid > 0) {
+      newStatus = 'partially_paid';
+    }
+    
+    const { error: updateError } = await supabase
+      .from('loans')
+      .update({ status: newStatus, updated_at: new Date().toISOString() })
+      .eq('id', loanId);
+
+    if (updateError) {
+      toast.error('Failed to update loan status');
+      console.error('Error updating loan status:', updateError);
+    }
+  }
+};

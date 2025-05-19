@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, BarChart, PieChart, ListTodo, Smile, UserCircle } from 'lucide-react';
+import { Home, BarChart, PieChart, ListTodo, Smile, UserCircle, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const navItems = [
@@ -28,6 +28,11 @@ const navItems = [
     title: 'Mood',
     icon: Smile,
     path: '/mood'
+  },
+  {
+    title: 'Loans',
+    icon: Users,
+    path: '/friendly-loans'
   },
   {
     title: 'Profile',
@@ -62,21 +67,21 @@ export function MobileTabBar() {
 
   return (
     <div className="fixed bottom-0 left-0 right-0 border-t bg-background z-50 md:hidden">
-      <div className="grid grid-cols-5 h-16">
+      <div className={`grid grid-cols-${Math.min(displayItems.length, 6)} h-16`}>
         {displayItems.map((item) => (
           <Link
             key={item.path}
             to={item.path}
             className={cn(
-              "flex flex-col items-center justify-center text-muted-foreground transition-colors px-1",
+              "flex flex-col items-center justify-center text-muted-foreground transition-colors px-1 text-center",
               isActive(item.path) && "text-primary"
             )}
           >
             <item.icon className={cn(
-              "h-5 w-5 mb-1",
+              "h-5 w-5 mb-0.5",
               isActive(item.path) ? "text-primary" : "text-muted-foreground" 
             )} />
-            <span className="text-xs font-medium">{item.title}</span>
+            <span className="text-[10px] leading-tight font-medium">{item.title}</span>
           </Link>
         ))}
       </div>

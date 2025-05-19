@@ -5,6 +5,7 @@ import { BudgetProgress } from "@/components/dashboard/BudgetProgress";
 import { TasksList } from "@/components/dashboard/TasksList";
 import { MoodTracker } from "@/components/dashboard/MoodTracker";
 import { IncomeCard } from "@/components/dashboard/IncomeCard";
+import { FriendlyLoansSummary } from "@/components/dashboard/FriendlyLoansSummary";
 import { PieChart, BarChart, Calendar } from "lucide-react";
 import { formatCurrency, daysLeftInMonth } from "@/lib/helpers";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -62,6 +63,7 @@ const Dashboard: React.FC = () => {
         </div>
       </div>
       
+      {/* Row 1: Stat Cards */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         <StatCard
           title="Total Income"
@@ -90,10 +92,17 @@ const Dashboard: React.FC = () => {
         />
       </div>
       
-      <div className="grid gap-6 md:grid-cols-3">
-        <IncomeCard className="card-hover h-full md:col-span-1" />
-        <div className="md:col-span-2">
-          <Card className="card-hover h-full">
+      {/* Row 2: Income & Loans */}
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+        <IncomeCard className="h-full md:col-span-1 lg:col-span-2 card-hover" />
+        <FriendlyLoansSummary className="h-full md:col-span-1 lg:col-span-2 card-hover" />
+      </div>
+      
+      {/* Row 3: Expenses Overview */}
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+        {/* Monthly Expenses Chart */}
+        <div className="h-full md:col-span-1 lg:col-span-2 card-hover">
+          <Card className="h-full">
             <CardHeader className="pb-0">
               <CardTitle className="text-lg">Monthly Expenses</CardTitle>
             </CardHeader>
@@ -144,13 +153,18 @@ const Dashboard: React.FC = () => {
             </CardContent>
           </Card>
         </div>
+        <ExpensePieChart className="h-full md:col-span-1 lg:col-span-2 card-hover" />
       </div>
       
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        <ExpensePieChart className="h-full" />
-        <BudgetProgress className="h-full" />
-        <TasksList className="h-full" />
+      {/* Row 4: Utilities */}
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-2">
+        <BudgetProgress className="h-full card-hover lg:col-span-1" />
+        <TasksList className="h-full card-hover lg:col-span-1" />
+        
       </div>
+      <div className="h-full card-hover lg:col-span-1">
+            <MoodTracker />
+        </div>
     </div>
   );
 };

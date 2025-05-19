@@ -22,7 +22,8 @@ import {
   ListTodo,
   LogOut,
   UserCircle,
-  Smile
+  Smile,
+  Users
 } from "lucide-react";
 import { useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -63,6 +64,11 @@ export function AppSidebar() {
       title: "Mood",
       path: "/mood",
       icon: Smile,
+    },
+    {
+      title: "Friendly Loans",
+      path: "/friendly-loans",
+      icon: Users,
     }
   ];
   
